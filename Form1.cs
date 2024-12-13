@@ -1,5 +1,4 @@
-﻿//VuManhTri_2280603381
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -9,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace BTVN_Tuan4
+namespace Lab03
 {
     public partial class Form1 : Form
     {
@@ -18,75 +17,22 @@ namespace BTVN_Tuan4
             InitializeComponent();
         }
 
-        BindingList<TTNhanVien> ttnv;
-
-        private void Form1_Load(object sender, EventArgs e)
+        private void timer1_Tick(object sender, EventArgs e)
         {
-            ttnv = new BindingList<TTNhanVien>();
-
-            TTNhanVien a = new TTNhanVien();
-            a.Msnv = "NV001";
-            a.Tennv = "Nguyễn Thị Thu Hiền";
-            a.Luongcb = 8500000;
-
-            ttnv.Add(a);
-            HienThiDanhSach();
+            var date = DateTime.Now.ToString("dd/MM/yy");
+            var time = DateTime.Now.ToString("hh:mm:ss tt");
+            this.toolStripStatusLabel1.Text = string.Format($"Hom Nay La Ngay: {date} - Bay Gio La: {time}");
         }
 
-        
-        private void HienThiDanhSach()
+        private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            dtgNhanVien.DataSource = null;
-            dtgNhanVien.DataSource = ttnv;
-        }
+            OpenFileDialog openFileDialog = new OpenFileDialog();
 
-
-        private void btnThem_Click(object sender, EventArgs e)
-        {
-            TTNhanVien nvMoi = new TTNhanVien();
-
-            NhanVien nvForm = new NhanVien(nvMoi);
-
-            if (nvForm.ShowDialog() == DialogResult.OK)
+            openFileDialog.Filter = "Video File|*.mp4;*.avi;*.mkv;*.wmv";
+            if (openFileDialog.ShowDialog() == DialogResult.OK )
             {
-                ttnv.Add(nvMoi);
-                HienThiDanhSach();
+                axWindowsMediaPlayer1.URL = openFileDialog.FileName;
             }
-        }
-
-        private void btnSua_Click(object sender, EventArgs e)
-        {
-            if (dtgNhanVien.CurrentRow != null)
-            {
-                var nvSua = (TTNhanVien)dtgNhanVien.CurrentRow.DataBoundItem;
-
-                NhanVien nvForm = new NhanVien(nvSua);
-
-                if (nvForm.ShowDialog() == DialogResult.OK)
-                {
-                    HienThiDanhSach();
-                }
-            }
-        }
-
-        private void btnXoa_Click(object sender, EventArgs e)
-        {
-            DialogResult res = MessageBox.Show("Bạn có muốn xóa mục đã chọn không?", "Thông Báo",
-                              MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-            if (res == DialogResult.Yes)
-            {
-                if (dtgNhanVien.CurrentRow != null)
-                {
-                    var nv_xoa = (TTNhanVien)dtgNhanVien.CurrentRow.DataBoundItem;
-                    ttnv.Remove(nv_xoa);
-                    HienThiDanhSach();
-                }
-            }
-        }
-
-        private void btnDong_Click(object sender, EventArgs e)
-        {
-            this.Close();
         }
     }
 }
