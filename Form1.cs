@@ -1,143 +1,117 @@
-﻿//VuManhTri_2280603381
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Drawing.Text;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Lab03_02
+namespace De_02
 {
-    public partial class frmSoanVanBan : Form
+    public partial class frmSanpham : Form
     {
-        public frmSoanVanBan()
+        public frmSanpham()
         {
             InitializeComponent();
         }
 
-        private void loadFont()
+        private void frmSanpham_Load(object sender, EventArgs e)
         {
-            foreach (FontFamily fontFamily in new InstalledFontCollection().Families)
+            LoadSanpham();
+            LoadLoaiSP();
+            ResetControlState();
+        }
+
+
+        private void dtgSanpham_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
             {
-                cmbFont.Items.Add(fontFamily.Name);
+                DataGridViewRow row = dtgSanpham.Rows[e.RowIndex];
+
+                txtMaSP.Text = row.Cells["MaSP"].Value.ToString();
+                txtTenSP.Text = row.Cells["TenSP"].Value.ToString();
+                dtNgaynhap.Value = DateTime.Parse(row.Cells["NgayNhap"].Value.ToString());
+                cboLoaiSP.Text = row.Cells["LoaiSP"].Value.ToString();
             }
-            cmbFont.SelectedItem = "Tahoma";
+            dtgSanpham.CellClick += new DataGridViewCellEventHandler(dtgSanpham_CellContentClick);
         }
 
-        private void loadSize()
+        private void btThem_Click(object sender, EventArgs e)
         {
-            int[] sizeValues = new int[] { 8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72 };
-            cmbSize.ComboBox.DataSource = sizeValues;
-            cmbSize.SelectedItem = 14;
-        }
-
-        private void frmSoanVanBan_Load(object sender, EventArgs e)
-        {
-            loadFont();
-            loadSize();
-        }
-
-        private void ToolStripMenuItemDinhDang_Click(object sender, EventArgs e)
-        {
-            FontDialog fontDlg = new FontDialog();
-            fontDlg.ShowColor = true;
-            fontDlg.ShowApply = true;
-            fontDlg.ShowEffects = true;
-            fontDlg.ShowHelp = true;
-            if (fontDlg.ShowDialog() != DialogResult.Cancel)
+            if (string.IsNullOrWhiteSpace(txtMaSP.Text) || string.IsNullOrWhiteSpace(txtTenSP.Text) || cboLoaiSP.SelectedIndex == -1)
             {
-                rtbVanBan.ForeColor = fontDlg.Color;
-                rtbVanBan.Font = fontDlg.Font;
+                MessageBox.Show("Bạn Vui Lòng Nhập Đầy Đủ Thông Tin!!!");
+                return;
             }
+            dtgSanpham.Rows.Add(txtMaSP.Text, txtTenSP.Text, dtNgaynhap.Value.ToString("dd/MM/yyyy"), cboLoaiSP.Text);
+            ResetControlState();
         }
 
-        private void ToolStripMenuItemMoFile_Click(object sender, EventArgs e)
+        private void btXoa_Click(object sender, EventArgs e)
         {
-            rtbVanBan.Clear();
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.CheckFileExists = true;
-            openFileDialog.CheckPathExists = true;
-            openFileDialog.Filter = "Text files (*.txt)|*.txt|RichText files (*.rtf)|*.rtf";
-            openFileDialog.Multiselect = false;
-
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            if (dtgSanpham.SelectedRows.Count > 0)
             {
-                string selectedFileName = openFileDialog.FileName;
-                try
+                var confirm = MessageBox.Show("Bạn Có Chắc Muốn Xóa Sản Phẩm Này?", "Xác Nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (confirm == DialogResult.Yes)
                 {
-                    if (Path.GetExtension(selectedFileName).Equals(".txt", StringComparison.OrdinalIgnoreCase))
+                    foreach (DataGridViewRow row in dtgSanpham.SelectedRows)
                     {
-                        rtbVanBan.LoadFile(selectedFileName, RichTextBoxStreamType.PlainText);
+                        dtgSanpham.Rows.Remove(row);
                     }
-                    else
-                    {
-                        rtbVanBan.LoadFile(selectedFileName, RichTextBoxStreamType.RichText);
-                    }
-                    MessageBox.Show("Tap Tin Da Duoc Mo Thanh Cong!!!", "Thong Bao", MessageBoxButtons.OK);
                 }
-
-
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Da Xay Ra Loi Trong Qua Trinh Mo Tap Tin: " + ex.Message, "Loi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+            }
+            else
+            {
+                MessageBox.Show("Vui Lòng Chọn Sản Phẩm Cần Xóa!!!");
             }
         }
 
-        private void btn_Bold_Click(object sender, EventArgs e)
+        private void ResetControlState()
         {
-            if (rtbVanBan.SelectionFont != null)
-            {
-                FontStyle style = rtbVanBan.SelectionFont.Style;
-                if (rtbVanBan.SelectionFont.Bold)
-                {
-                    style &= ~FontStyle.Bold;
-                }
-                else
-                {
-                    style |= FontStyle.Bold;
-                }
-                rtbVanBan.SelectionFont = new Font(rtbVanBan.SelectionFont, style);
-            }
+            txtMaSP.Clear();
+            txtTenSP.Clear();
+            dtNgaynhap.Value = DateTime.Now;
+            cboLoaiSP.SelectedIndex = -1;
+
+            btLuu.Enabled = false;
+            btKLuu.Enabled = false;
         }
 
-        private void btn_Italic_Click(object sender, EventArgs e)
+        private void LoadLoaiSP()
         {
-            if (rtbVanBan.SelectionFont != null)
-            {
-                FontStyle style = rtbVanBan.SelectionFont.Style;
-                if (rtbVanBan.SelectionFont.Italic)
-                {
-                    style &= ~FontStyle.Italic;
-                }
-                else
-                {
-                    style |= FontStyle.Italic;
-                }
-                rtbVanBan.SelectionFont = new Font(rtbVanBan.SelectionFont, style);
-            }
+            cboLoaiSP.Items.Clear();
+            cboLoaiSP.Items.Add("L1");
+            cboLoaiSP.Items.Add("L2");
         }
 
-        private void btn_Under_Click(object sender, EventArgs e)
+        private void LoadSanpham()
         {
-            if (rtbVanBan.SelectionFont != null)
+            if (dtgSanpham.Columns.Count == 0)
             {
-                FontStyle style = rtbVanBan.SelectionFont.Style;
-                if (rtbVanBan.SelectionFont.Underline)
-                {
-                    style &= ~FontStyle.Underline;
-                }
-                else
-                {
-                    style |= FontStyle.Underline;
-                }
-                rtbVanBan.SelectionFont = new Font(rtbVanBan.SelectionFont, style);
+                dtgSanpham.Columns.Add("MaSP", "Mã SP");
+                dtgSanpham.Columns.Add("TenSP", "Tên sản phẩm");
+                dtgSanpham.Columns.Add("NgayNhap", "Ngày nhập");
+                dtgSanpham.Columns.Add("LoaiSP", "Loại SP");
+            }
+            dtgSanpham.Rows.Clear();
+            dtgSanpham.Rows.Add("SP0001", "iPhone X", "2024/06/06", "L1");
+            dtgSanpham.Rows.Add("SP0002", "OPPO A53", "2024/05/25", "L1");
+            dtgSanpham.Rows.Add("SP0003", "JBL 5", "2024/06/17", "L2");
+        }
+
+        private void btThoat_Click(object sender, EventArgs e)
+        {
+            DialogResult result = MessageBox.Show("Bạn Có Chắc Chắn Muốn Thoát Không?", "Xác Nhận Thoát", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            //chon Yes hay No
+            if (result == DialogResult.Yes)
+            {
+                Application.Exit(); //thoat
             }
         }
     }
 }
+
